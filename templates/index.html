@@ -1,18 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Result App</title>
+    <title>Add Student</title>
 </head>
 <body>
-    <h2>Enter Student Details</h2>
-    <form method="POST">
-        Name: <input type="text" name="name"><br><br>
-        Roll No: <input type="text" name="roll"><br><br>
-        Maths: <input type="number" name="maths"><br><br>
-        Science: <input type="number" name="science"><br><br>
-        English: <input type="number" name="english"><br><br>
-        <button type="submit">Calculate Result</button>
-        <a href="/students">View All Students</a>
-    </form>
+
+<h2>📘 Add Student Result</h2>
+
+<form method="POST">
+
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Roll Number:</label><br>
+    <input type="text" name="roll" required><br><br>
+
+    <hr>
+
+    <h3>Enter Marks (optional)</h3>
+
+    Maths: <input type="number" name="maths"><br><br>
+    Science: <input type="number" name="science"><br><br>
+    English: <input type="number" name="english"><br><br>
+    Accountancy: <input type="number" name="accountancy"><br><br>
+    Economics: <input type="number" name="economics"><br><br>
+    Business: <input type="number" name="business"><br><br>
+    IT: <input type="number" name="it"><br><br>
+
+    <button type="submit">Submit Result</button>
+
+</form>
+
+<br><br>
+
+<a href="/students">📊 View Students</a> |
+<a href="/logout">🔐 Logout</a>
+
 </body>
 </html>
