@@ -1,5 +1,9 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
+import io
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 app.secret_key = 'secret123'
@@ -22,6 +26,8 @@ def init_db():
             economics INTEGER,
             business INTEGER,
             it INTEGER,
+            hindi INTEGER,
+            sanskrit INTEGER,
             total INTEGER,
             percentage REAL,
             grade TEXT
@@ -41,7 +47,7 @@ def init_db():
 init_db()
 
 # -------------------------------
-# Default user
+# Default User
 # -------------------------------
 def create_user():
     conn = sqlite3.connect('database.db')
@@ -106,7 +112,7 @@ def index():
         name = request.form['name']
         roll = request.form['roll']
 
-        # Optional subjects (safe conversion)
+        # Optional subjects
         maths = int(request.form.get('maths') or 0)
         science = int(request.form.get('science') or 0)
         english = int(request.form.get('english') or 0)
@@ -114,8 +120,15 @@ def index():
         economics = int(request.form.get('economics') or 0)
         business = int(request.form.get('business') or 0)
         it = int(request.form.get('it') or 0)
+        hindi = int(request.form.get('hindi') or 0)
+        sanskrit = int(request.form.get('sanskrit') or 0)
 
-        marks_list = [maths, science, english, accountancy, economics, business, it]
+        marks_list = [
+            maths, science, english,
+            accountancy, economics, business, it,
+            hindi, sanskrit
+        ]
+
         valid_subjects = [m for m in marks_list if m > 0]
 
         if len(valid_subjects) > 0:
@@ -136,15 +149,15 @@ def index():
         if existing:
             conn.execute('''
                 UPDATE students
-                SET name=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, total=?, percentage=?, grade=?
+                SET name=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, hindi=?, sanskrit=?, total=?, percentage=?, grade=?
                 WHERE roll=?
-            ''', (name, maths, science, english, accountancy, economics, business, it, total, percentage, grade, roll))
+            ''', (name, maths, science, english, accountancy, economics, business, it, hindi, sanskrit, total, percentage, grade, roll))
         else:
             conn.execute('''
                 INSERT INTO students
-                (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade))
+                (name, roll, maths, science, english, accountancy, economics, business, it, hindi, sanskrit, total, percentage, grade)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (name, roll, maths, science, english, accountancy, economics, business, it, hindi, sanskrit, total, percentage, grade))
 
         conn.commit()
         conn.close()
@@ -154,7 +167,7 @@ def index():
     return render_template('index.html')
 
 # -------------------------------
-# Students list + search
+# Students List
 # -------------------------------
 @app.route('/students', methods=['GET', 'POST'])
 def students():
@@ -213,8 +226,15 @@ def edit(id):
         economics = int(request.form.get('economics') or 0)
         business = int(request.form.get('business') or 0)
         it = int(request.form.get('it') or 0)
+        hindi = int(request.form.get('hindi') or 0)
+        sanskrit = int(request.form.get('sanskrit') or 0)
 
-        marks_list = [maths, science, english, accountancy, economics, business, it]
+        marks_list = [
+            maths, science, english,
+            accountancy, economics, business, it,
+            hindi, sanskrit
+        ]
+
         valid_subjects = [m for m in marks_list if m > 0]
 
         if len(valid_subjects) > 0:
@@ -228,9 +248,9 @@ def edit(id):
 
         conn.execute('''
             UPDATE students
-            SET name=?, roll=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, total=?, percentage=?, grade=?
+            SET name=?, roll=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, hindi=?, sanskrit=?, total=?, percentage=?, grade=?
             WHERE id=?
-        ''', (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade, id))
+        ''', (name, roll, maths, science, english, accountancy, economics, business, it, hindi, sanskrit, total, percentage, grade, id))
 
         conn.commit()
         conn.close()
@@ -241,6 +261,55 @@ def edit(id):
     conn.close()
 
     return render_template('edit.html', student=student)
+
+# -------------------------------
+# PDF Download
+# -------------------------------
+@app.route('/download/<int:id>')
+def download_pdf(id):
+    if 'user' not in session:
+        return redirect('/login')
+
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM students WHERE id=?", (id,))
+    s = cur.fetchone()
+    conn.close()
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+
+    content = []
+
+    content.append(Paragraph("Student Result", styles['Title']))
+    content.append(Spacer(1, 10))
+
+    content.append(Paragraph(f"Name: {s[1]}", styles['Normal']))
+    content.append(Paragraph(f"Roll: {s[2]}", styles['Normal']))
+    content.append(Spacer(1, 10))
+
+    subjects = [
+        ("Maths", s[3]), ("Science", s[4]), ("English", s[5]),
+        ("Accountancy", s[6]), ("Economics", s[7]), ("Business", s[8]),
+        ("IT", s[9]), ("Hindi", s[10]), ("Sanskrit", s[11])
+    ]
+
+    for sub, marks in subjects:
+        if marks > 0:
+            content.append(Paragraph(f"{sub}: {marks}", styles['Normal']))
+
+    content.append(Spacer(1, 10))
+    content.append(Paragraph(f"Total: {s[12]}", styles['Normal']))
+    content.append(Paragraph(f"Percentage: {round(s[13],2)}%", styles['Normal']))
+    content.append(Paragraph(f"Grade: {s[14]}", styles['Normal']))
+
+    doc.build(content)
+    buffer.seek(0)
+
+    return send_file(buffer, as_attachment=True,
+                     download_name=f"result_{s[1]}.pdf",
+                     mimetype='application/pdf')
 
 # -------------------------------
 # Run
