@@ -2,15 +2,14 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 
 app = Flask(__name__)
-app.secret_key = 'secret123'   # required for login session
+app.secret_key = 'secret123'
 
 # -------------------------------
-# Database Initialization
+# Database
 # -------------------------------
 def init_db():
     conn = sqlite3.connect('database.db')
 
-    # Students table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,13 +18,16 @@ def init_db():
             maths INTEGER,
             science INTEGER,
             english INTEGER,
+            accountancy INTEGER,
+            economics INTEGER,
+            business INTEGER,
+            it INTEGER,
             total INTEGER,
             percentage REAL,
             grade TEXT
         )
     ''')
 
-    # Users table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,13 +41,12 @@ def init_db():
 init_db()
 
 # -------------------------------
-# Create Default User
+# Default user
 # -------------------------------
 def create_user():
     conn = sqlite3.connect('database.db')
     try:
-        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('sonia', '8765'))
-        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('pavita', '7856'))
+        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', '1234'))
         conn.commit()
     except:
         pass
@@ -54,37 +55,31 @@ def create_user():
 create_user()
 
 # -------------------------------
-# Grade Function
+# Grade
 # -------------------------------
-def calculate_grade(percentage):
-    if percentage >= 90:
-        return "A+"
-    elif percentage >= 75:
-        return "A"
-    elif percentage >= 60:
-        return "B"
-    else:
-        return "C"
+def calculate_grade(p):
+    if p >= 90: return "A+"
+    elif p >= 75: return "A"
+    elif p >= 60: return "B"
+    else: return "C"
 
 # -------------------------------
-# Login Route
+# Login
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        print(username, password)
+        u = request.form['username']
+        p = request.form['password']
 
         conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
-        user = cursor.fetchone()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users WHERE username=? AND password=?", (u, p))
+        user = cur.fetchone()
         conn.close()
 
         if user:
-            session['user'] = username
+            session['user'] = u
             return redirect('/')
         else:
             return "Invalid Login ❌"
@@ -100,7 +95,7 @@ def logout():
     return redirect('/login')
 
 # -------------------------------
-# Home Page (Add / Update Student)
+# Add / Update Student
 # -------------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -110,32 +105,46 @@ def index():
     if request.method == 'POST':
         name = request.form['name']
         roll = request.form['roll']
-        maths = int(request.form['maths'])
-        science = int(request.form['science'])
-        english = int(request.form['english'])
 
-        total = maths + science + english
-        percentage = total / 3
+        # Optional subjects (safe conversion)
+        maths = int(request.form.get('maths') or 0)
+        science = int(request.form.get('science') or 0)
+        english = int(request.form.get('english') or 0)
+        accountancy = int(request.form.get('accountancy') or 0)
+        economics = int(request.form.get('economics') or 0)
+        business = int(request.form.get('business') or 0)
+        it = int(request.form.get('it') or 0)
+
+        marks_list = [maths, science, english, accountancy, economics, business, it]
+        valid_subjects = [m for m in marks_list if m > 0]
+
+        if len(valid_subjects) > 0:
+            total = sum(valid_subjects)
+            percentage = total / len(valid_subjects)
+        else:
+            total = 0
+            percentage = 0
+
         grade = calculate_grade(percentage)
 
         conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
+        cur = conn.cursor()
 
-        cursor.execute("SELECT id FROM students WHERE roll=?", (roll,))
-        existing = cursor.fetchone()
+        cur.execute("SELECT id FROM students WHERE roll=?", (roll,))
+        existing = cur.fetchone()
 
         if existing:
             conn.execute('''
                 UPDATE students
-                SET name=?, maths=?, science=?, english=?, total=?, percentage=?, grade=?
+                SET name=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, total=?, percentage=?, grade=?
                 WHERE roll=?
-            ''', (name, maths, science, english, total, percentage, grade, roll))
+            ''', (name, maths, science, english, accountancy, economics, business, it, total, percentage, grade, roll))
         else:
             conn.execute('''
                 INSERT INTO students
-                (name, roll, maths, science, english, total, percentage, grade)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (name, roll, maths, science, english, total, percentage, grade))
+                (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade))
 
         conn.commit()
         conn.close()
@@ -145,7 +154,7 @@ def index():
     return render_template('index.html')
 
 # -------------------------------
-# View + Search Students
+# Students list + search
 # -------------------------------
 @app.route('/students', methods=['GET', 'POST'])
 def students():
@@ -153,22 +162,22 @@ def students():
         return redirect('/login')
 
     conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
     search = request.form.get('search')
 
     if search:
-        cursor.execute("SELECT * FROM students WHERE roll LIKE ?", ('%' + search + '%',))
+        cur.execute("SELECT * FROM students WHERE roll LIKE ?", ('%' + search + '%',))
     else:
-        cursor.execute("SELECT * FROM students ORDER BY id DESC")
+        cur.execute("SELECT * FROM students ORDER BY id DESC")
 
-    data = cursor.fetchall()
+    data = cur.fetchall()
     conn.close()
 
     return render_template('students.html', students=data)
 
 # -------------------------------
-# Delete Student
+# Delete
 # -------------------------------
 @app.route('/delete/<int:id>')
 def delete(id):
@@ -183,7 +192,7 @@ def delete(id):
     return redirect('/students')
 
 # -------------------------------
-# Edit Student
+# Edit
 # -------------------------------
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
@@ -191,38 +200,50 @@ def edit(id):
         return redirect('/login')
 
     conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
     if request.method == 'POST':
         name = request.form['name']
         roll = request.form['roll']
-        maths = int(request.form['maths'])
-        science = int(request.form['science'])
-        english = int(request.form['english'])
 
-        total = maths + science + english
-        percentage = total / 3
+        maths = int(request.form.get('maths') or 0)
+        science = int(request.form.get('science') or 0)
+        english = int(request.form.get('english') or 0)
+        accountancy = int(request.form.get('accountancy') or 0)
+        economics = int(request.form.get('economics') or 0)
+        business = int(request.form.get('business') or 0)
+        it = int(request.form.get('it') or 0)
+
+        marks_list = [maths, science, english, accountancy, economics, business, it]
+        valid_subjects = [m for m in marks_list if m > 0]
+
+        if len(valid_subjects) > 0:
+            total = sum(valid_subjects)
+            percentage = total / len(valid_subjects)
+        else:
+            total = 0
+            percentage = 0
+
         grade = calculate_grade(percentage)
 
         conn.execute('''
             UPDATE students
-            SET name=?, roll=?, maths=?, science=?, english=?, total=?, percentage=?, grade=?
+            SET name=?, roll=?, maths=?, science=?, english=?, accountancy=?, economics=?, business=?, it=?, total=?, percentage=?, grade=?
             WHERE id=?
-        ''', (name, roll, maths, science, english, total, percentage, grade, id))
+        ''', (name, roll, maths, science, english, accountancy, economics, business, it, total, percentage, grade, id))
 
         conn.commit()
         conn.close()
-
         return redirect('/students')
 
-    cursor.execute("SELECT * FROM students WHERE id=?", (id,))
-    student = cursor.fetchone()
+    cur.execute("SELECT * FROM students WHERE id=?", (id,))
+    student = cur.fetchone()
     conn.close()
 
     return render_template('edit.html', student=student)
 
 # -------------------------------
-# Run App
+# Run
 # -------------------------------
 if __name__ == '__main__':
     app.run(debug=True)
