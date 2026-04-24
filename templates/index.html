@@ -1,40 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Student</title>
+    <title>Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f4f6f9;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover {
+            background: #34495e;
+        }
+
+        /* Main */
+        .main {
+            margin-left: 240px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>📘 Add Student Result</h2>
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>📘 School App</h2>
+    <a href="/">➕ Add Result</a>
+    <a href="/students">📊 Students</a>
+    <a href="/logout">🔐 Logout</a>
+</div>
 
-<form method="POST">
+<!-- Main Content -->
+<div class="main">
 
-    <label>Name:</label><br>
-    <input type="text" name="name" required><br><br>
+    <div class="card">
+        <h2>Add Student Result</h2>
 
-    <label>Roll Number:</label><br>
-    <input type="text" name="roll" required><br><br>
+        <form method="POST">
 
-    <hr>
+            <label>Name</label>
+            <input type="text" name="name" required>
 
-    <h3>Enter Marks (optional)</h3>
+            <label>Roll Number</label>
+            <input type="text" name="roll" required>
 
-    Maths: <input type="number" name="maths"><br><br>
-    Science: <input type="number" name="science"><br><br>
-    English: <input type="number" name="english"><br><br>
-    Accountancy: <input type="number" name="accountancy"><br><br>
-    Economics: <input type="number" name="economics"><br><br>
-    Business: <input type="number" name="business"><br><br>
-    IT: <input type="number" name="it"><br><br>
+            <h3>Subjects (Optional)</h3>
 
-    <button type="submit">Submit Result</button>
+            <div class="grid">
+                <input type="number" name="maths" placeholder="Maths">
+                <input type="number" name="science" placeholder="Science">
+                <input type="number" name="english" placeholder="English">
+                <input type="number" name="accountancy" placeholder="Accountancy">
+                <input type="number" name="economics" placeholder="Economics">
+                <input type="number" name="business" placeholder="Business">
+                <input type="number" name="it" placeholder="IT">
+                <input type="number" name="hindi" placeholder="Hindi">
+                <input type="number" name="sanskrit" placeholder="Sanskrit">
+            </div>
 
-</form>
+            <button type="submit">Submit Result</button>
 
-<br><br>
+        </form>
+    </div>
 
-<a href="/students">📊 View Students</a> |
-<a href="/logout">🔐 Logout</a>
+</div>
 
 </body>
 </html>
