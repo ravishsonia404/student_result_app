@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            text-align: center;
+        }
+        .card {
+            background: white;
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+        }
+        .grade {
+            font-size: 24px;
+            color: green;
+            font-weight: bold;
+        }
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: white;
+            background: #007bff;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Student Result</h2>
+
+    <p><strong>Name:</strong> {{ name }}</p>
+    <p><strong>Total:</strong> {{ total }}</p>
+    <p><strong>Percentage:</strong> {{ "%.2f"|format(percentage) }}%</p>
+    <p class="grade">Grade: {{ grade }}</p>
+
+    <a href="/">Go Back</a>
+</div>
+
+</body>
+</html>
