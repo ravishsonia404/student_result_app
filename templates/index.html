@@ -1,129 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Student Result</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background: #f4f6f9;
-        }
+  <!-- ✅ MOST IMPORTANT (fixes mobile view) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* Sidebar */
-        .sidebar {
-            width: 220px;
-            height: 100vh;
-            background: #2c3e50;
-            color: white;
-            position: fixed;
-            padding: 20px;
-        }
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #3f51b5, #2196f3);
+      color: #333;
+    }
 
-        .sidebar h2 {
-            text-align: center;
-        }
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
 
-        .sidebar a {
-            display: block;
-            color: white;
-            padding: 10px;
-            text-decoration: none;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
+    h1 {
+      text-align: center;
+      color: #3f51b5;
+    }
 
-        .sidebar a:hover {
-            background: #34495e;
-        }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
 
-        /* Main */
-        .main {
-            margin-left: 240px;
-            padding: 20px;
-        }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      background: #3f51b5;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
+    button:hover {
+      background: #303f9f;
+    }
 
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f5f5f5;
+    }
 
-        button {
-            background: #3498db;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            width: 100%;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-    </style>
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2>📘 School App</h2>
-    <a href="/">➕ Add Result</a>
-    <a href="/students">📊 Students</a>
-    <a href="/logout">🔐 Logout</a>
-</div>
+  <div class="container">
+    <h1>Student Result</h1>
 
-<!-- Main Content -->
-<div class="main">
+    <input type="text" id="roll" placeholder="Enter Roll Number">
 
-    <div class="card">
-        <h2>Add Student Result</h2>
+    <button onclick="getResult()">Get Result</button>
 
-        <form method="POST">
+    <div id="output"></div>
+  </div>
 
-            <label>Name</label>
-            <input type="text" name="name" required>
+  <script>
+    function getResult() {
+      const roll = document.getElementById("roll").value.trim();
+      const output = document.getElementById("output");
 
-            <label>Roll Number</label>
-            <input type="text" name="roll" required>
+      if (roll === "") {
+        output.innerHTML = "<p class='error'>Please enter roll number</p>";
+        return;
+      }
 
-            <h3>Subjects (Optional)</h3>
-
-            <div class="grid">
-                <input type="number" name="maths" placeholder="Maths">
-                <input type="number" name="science" placeholder="Science">
-                <input type="number" name="english" placeholder="English">
-                <input type="number" name="accountancy" placeholder="Accountancy">
-                <input type="number" name="economics" placeholder="Economics">
-                <input type="number" name="business" placeholder="Business">
-                <input type="number" name="it" placeholder="IT">
-                <input type="number" name="hindi" placeholder="Hindi">
-                <input type="number" name="sanskrit" placeholder="Sanskrit">
-            </div>
-
-            <button type="submit">Submit Result</button>
-
-        </form>
-    </div>
-
-</div>
+      // Dummy data (replace with your backend later)
+      if (roll === "101") {
+        output.innerHTML = `
+          <div class="result">
+            <h3>Name: Rahul Kumar</h3>
+            <p>Roll: 101</p>
+            <p>Math: 90</p>
+            <p>Science: 85</p>
+            <p>English: 88</p>
+          </div>
+        `;
+      } else {
+        output.innerHTML = "<p class='error'>No Result Found</p>";
+      }
+    }
+  </script>
 
 </body>
 </html>
